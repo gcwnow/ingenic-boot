@@ -1,0 +1,32 @@
+ingenic_boot is a linux port of Ingenic usb boot tools, It can flash 
+bootloader, kernel, rootfs to Ingenic XBurst CPU device SD Card.
+using the same fireware of windows version.
+
+Build Requirements: libusb-dev, libconfuse-dev
+To compile, simply type
+
+	cd src/
+	make
+
+Command line options
+
+	--help or -h		: this help screen
+	--version or -v		: version num
+	--probe			: only get device CPU infomation
+	--boot=<filename>	: download the boot image to device
+	--kernel=<filename>	: download the kernel image to device
+	--filesys=<filename>	: download the filesys image to device
+	--check			: read data back and check
+
+	"=<filename>" are optional
+
+The default configuration file is "fw/current.cfg", you need change it
+adapt to your board.
+
+Current version 1.0, future version will support NAND operation, GPIO test,
+etc.. and do more test.
+
+ingenic_boot is copyright (C) 2011 by Duke Fong <duke@dukelec.com>, and is
+licensed under the terms of the GNU General Public License version 3.
+See the file COPYING for more information.
+
