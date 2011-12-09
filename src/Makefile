@@ -1,5 +1,5 @@
 #
-# usbboot configuration file
+# ingenic_boot configuration file
 #
 # Utility to respond to the Ingenic XBurst USB boot protocol, provide
 # initial boot stages and ability to access NAND on device.

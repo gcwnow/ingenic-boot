@@ -1,4 +1,5 @@
 /*
+ * Copyright(C) 2006 Ingenic Semiconductor Inc.
  * Authors: Duke Fong <duke@dukelec.com>
  *
  * This program is free software: you can redistribute it and/or modify

@@ -1,4 +1,5 @@
 /*
+ * Copyright(C) 2006 Ingenic Semiconductor Inc.
  * Authors: Duke Fong <duke@dukelec.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +45,10 @@ int do_work(void)
 		return 1;
 
 	printf("\n#parse_configure\n");
-	retval = parse_configure(ingenic_dev, "fw/current.cfg");
+	char cfg_file_path[PATH_MAX] = {0};
+	strcat(cfg_file_path, ingenic_dev->tool_cfg.realpath);
+	strcat(cfg_file_path, "fw/current.cfg");
+	retval = parse_configure(ingenic_dev, cfg_file_path);
 	if (retval != 1)
 		return -1;
 
@@ -135,6 +139,11 @@ int main (int argc, char **argv)
 
 	if (argc < 2)
 		goto helpmsg;
+
+	/* prepare the realpath */
+	realpath(argv[0], ingenic_dev->tool_cfg.realpath);
+	dirname(ingenic_dev->tool_cfg.realpath);
+	strcat(ingenic_dev->tool_cfg.realpath, "/");
 	
 	while (1)
 	{
@@ -159,13 +168,16 @@ int main (int argc, char **argv)
 				switch (option_index) {
 
 				case 0:
-					ingenic_dev->tool_cfg.img_bootloader_path = optarg;
+					strcat(ingenic_dev->tool_cfg.img_bootloader_path,
+					       optarg);
 					break;
 				case 1:
-					ingenic_dev->tool_cfg.img_kernel_path = optarg;
+					strcat(ingenic_dev->tool_cfg.img_kernel_path,
+					       optarg);
 					break;
 				case 2:
-					ingenic_dev->tool_cfg.img_filesys_path = optarg;
+					strcat(ingenic_dev->tool_cfg.img_filesys_path,
+					       optarg);
 					break;
 				}
 			}
@@ -186,7 +198,7 @@ helpmsg:
 				);
 			abort ();
 		case 'v':
-			printf("\n\tversion: 1.0\n\n");
+			printf("\n\tversion: 1.1\n\n");
      
 		default:
 			abort ();

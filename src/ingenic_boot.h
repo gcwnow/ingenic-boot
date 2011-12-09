@@ -1,4 +1,5 @@
 /*
+ * Copyright(C) 2006 Ingenic Semiconductor Inc.
  * Authors: Duke Fong <duke@dukelec.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <limits.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -91,13 +93,14 @@ struct hand {
 /*-------------------------------------------------------------------------*/
 
 struct tool_cfg {
-	char		*fw_stage1_path;
-	char		*fw_stage2_path;
-	char		*img_bootloader_path;
+	char		realpath[PATH_MAX];
+	char		fw_stage1_path[PATH_MAX];
+	char		fw_stage2_path[PATH_MAX];
+	char		img_bootloader_path[PATH_MAX];
 	unsigned int	img_bootloader_addr;
-	char		*img_kernel_path;
+	char		img_kernel_path[PATH_MAX];
 	unsigned int	img_kernel_addr;
-	char		*img_filesys_path;
+	char		img_filesys_path[PATH_MAX];
 	unsigned int	img_filesys_addr;
 };
 

@@ -1,4 +1,5 @@
 /*
+ * Copyright(C) 2009  Qi Hardware Inc., & 2006 Ingenic Semiconductor Inc.
  * Authors: Xiangfu Liu <xiangfu@sharism.cc>
  *          Marek Lindner <lindner_marek@yahoo.de>
  *	    Duke Fong <duke@dukelec.com>

@@ -1,4 +1,5 @@
 /*
+ * Copyright(C) 2009  Qi Hardware Inc., & 2006 Ingenic Semiconductor Inc.
  * Authors: Marek Lindner <lindner_marek@yahoo.de>
  *	    Duke Fong <duke@dukelec.com>
  *
@@ -199,31 +200,28 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 	hand->nand_bpc = cfg_getint(cfg, "NAND_BLOCKPERCHIP");
 
 	/* tool_cfg */
-	tool_cfg->fw_stage1_path = malloc(strlen(cfg_getstr(cfg, "FW_STAGE1_PATH")));
-	strcpy(tool_cfg->fw_stage1_path, cfg_getstr(cfg, "FW_STAGE1_PATH"));
+	strcat(tool_cfg->fw_stage1_path, tool_cfg->realpath);
+	strcat(tool_cfg->fw_stage1_path, cfg_getstr(cfg, "FW_STAGE1_PATH"));
 	
-	tool_cfg->fw_stage2_path = malloc(strlen(cfg_getstr(cfg, "FW_STAGE2_PATH")));
-	strcpy(tool_cfg->fw_stage2_path, cfg_getstr(cfg, "FW_STAGE2_PATH"));
+	strcat(tool_cfg->fw_stage2_path, tool_cfg->realpath);
+	strcat(tool_cfg->fw_stage2_path, cfg_getstr(cfg, "FW_STAGE2_PATH"));
 
-	if (tool_cfg->img_bootloader_path == NULL) {
-		tool_cfg->img_bootloader_path =
-			malloc(strlen(cfg_getstr(cfg, "IMG_BOOTLOADER_PATH")));
-		strcpy(tool_cfg->img_bootloader_path,
+	if (tool_cfg->img_bootloader_path[0] == '\0') {
+		strcat(tool_cfg->img_bootloader_path, tool_cfg->realpath);
+		strcat(tool_cfg->img_bootloader_path,
 		       cfg_getstr(cfg, "IMG_BOOTLOADER_PATH"));
 	}
 	tool_cfg->img_bootloader_addr = cfg_getint(cfg, "IMG_BOOTLOADER_ADDR");
 
-	if (tool_cfg->img_kernel_path == NULL) {
-		tool_cfg->img_kernel_path =
-			malloc(strlen(cfg_getstr(cfg, "IMG_KERNEL_PATH")));
-		strcpy(tool_cfg->img_kernel_path, cfg_getstr(cfg, "IMG_KERNEL_PATH"));
+	if (tool_cfg->img_kernel_path[0] == '\0') {
+		strcat(tool_cfg->img_kernel_path, tool_cfg->realpath);
+		strcat(tool_cfg->img_kernel_path, cfg_getstr(cfg, "IMG_KERNEL_PATH"));
 	}
 	tool_cfg->img_kernel_addr = cfg_getint(cfg, "IMG_KERNEL_ADDR");
 
-	if (tool_cfg->img_filesys_path == NULL) {
-		tool_cfg->img_filesys_path =
-			malloc(strlen(cfg_getstr(cfg, "IMG_FILESYS_PATH")));
-		strcpy(tool_cfg->img_filesys_path, cfg_getstr(cfg, "IMG_FILESYS_PATH"));
+	if (tool_cfg->img_filesys_path[0] == '\0') {
+		strcat(tool_cfg->img_filesys_path, tool_cfg->realpath);
+		strcat(tool_cfg->img_filesys_path, cfg_getstr(cfg, "IMG_FILESYS_PATH"));
 	}
 	tool_cfg->img_filesys_addr = cfg_getint(cfg, "IMG_FILESYS_ADDR");
 
