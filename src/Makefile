@@ -27,7 +27,7 @@ OBJS := $(patsubst %.c,%.o, $(SRCS))
 LDLIBS = -lusb -lconfuse -lgcc -lm -lc
 
 all: ingenic_boot
-	mv ingenic_boot ../
+	mv ingenic_boot ../ingenic-boot
 
 ingenic_boot: $(OBJS)
 
@@ -40,4 +40,4 @@ include $(SRCS:.c=.d)
 	rm -f $@.$$$$
 
 clean:
-	rm -f ../ingenic_boot *.o *.d
+	rm -f ../ingenic-boot *.o *.d
