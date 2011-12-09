@@ -141,7 +141,7 @@ int main (int argc, char **argv)
 		goto helpmsg;
 
 	/* prepare the realpath */
-	realpath(argv[0], ingenic_dev->tool_cfg.realpath);
+	readlink("/proc/self/exe", ingenic_dev->tool_cfg.realpath, PATH_MAX);
 	dirname(ingenic_dev->tool_cfg.realpath);
 	strcat(ingenic_dev->tool_cfg.realpath, "/");
 	
