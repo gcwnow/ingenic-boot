@@ -100,8 +100,8 @@ struct tool_cfg {
 	unsigned int	img_bootloader_addr;
 	char		img_kernel_path[PATH_MAX];
 	unsigned int	img_kernel_addr;
-	char		img_filesys_path[PATH_MAX];
-	unsigned int	img_filesys_addr;
+	char		img_rootfs_path[PATH_MAX];
+	unsigned int	img_rootfs_addr;
 };
 
 enum BOOT_STAGE {

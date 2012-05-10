@@ -22,7 +22,7 @@
 struct ingenic_dev *ingenic_dev;
 int boot_flag = 0;
 int kernel_flag = 0;
-int filesys_flag = 0;
+int rootfs_flag = 0;
 int check_flag = 0;
 int probe_flag = 0;
 
@@ -94,12 +94,12 @@ int do_work(void)
 			return -1;
 	}
 
-	/* system */
-	if (filesys_flag) {
-		printf("\n#SD program filesys...\n");
+	/* rootfs */
+	if (rootfs_flag) {
+		printf("\n#SD program rootfs...\n");
 		retval = sd_card_program(ingenic_dev,
-					 ingenic_dev->tool_cfg.img_filesys_addr,
-					 ingenic_dev->tool_cfg.img_filesys_path,
+					 ingenic_dev->tool_cfg.img_rootfs_addr,
+					 ingenic_dev->tool_cfg.img_rootfs_path,
 					 check_flag);
 		if (retval != 1)
 			return -1;
@@ -121,7 +121,7 @@ static struct option long_options[] =
 	/* These options set a flag. */
 	{"boot",	optional_argument, &boot_flag, 1},
 	{"kernel",	optional_argument, &kernel_flag, 1},
-	{"filesys",	optional_argument, &filesys_flag, 1},
+	{"rootfs",	optional_argument, &rootfs_flag, 1},
 	{"check",	no_argument, &check_flag, 1},
 	{"probe",	no_argument, &probe_flag, 1},
 	/* These options don't set a flag.
@@ -176,7 +176,7 @@ int main (int argc, char **argv)
 					       optarg);
 					break;
 				case 2:
-					strcat(ingenic_dev->tool_cfg.img_filesys_path,
+					strcat(ingenic_dev->tool_cfg.img_rootfs_path,
 					       optarg);
 					break;
 				}
@@ -191,14 +191,14 @@ helpmsg:
 			       "\t--probe\t\t\t: only get device CPU infomation\n"
 			       "\t--boot=<filename>\t: download the boot image to device\n"
 			       "\t--kernel=<filename>\t: download the kernel image to device\n"
-			       "\t--filesys=<filename>\t: download the filesys image to device\n"
+			       "\t--rootfs=<filename>\t: download the rootfs image to device\n"
 			       "\t--check\t\t\t: read data back and check\n"
 			       "\n\t\"=<filename>\" are optional, default setting"
 			       " in fw/current.cfg\n\n"
 				);
 			abort ();
 		case 'v':
-			printf("\n\tversion: 1.1\n\n");
+			printf("\n\tversion: 1.2\n\n");
      
 		default:
 			abort ();

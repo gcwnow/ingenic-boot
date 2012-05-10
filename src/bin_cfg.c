@@ -150,14 +150,14 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 		CFG_INT("NAND_BLOCKPERCHIP", 0, CFGF_NONE),
 
 		/* fileset of tool_cfg */
-		CFG_STR("FW_STAGE1_PATH", "fw/fw_ddr2.bin", CFGF_NONE),
-		CFG_STR("FW_STAGE2_PATH", "fw/usb_boot.bin", CFGF_NONE),
-		CFG_STR("IMG_BOOTLOADER_PATH", "maple_x-boot-msc.bin", CFGF_NONE),
+		CFG_STR("FW_STAGE1_PATH", "fw/stage1.bin", CFGF_NONE),
+		CFG_STR("FW_STAGE2_PATH", "fw/stage2.bin", CFGF_NONE),
+		CFG_STR("IMG_BOOTLOADER_PATH", "boot.bin", CFGF_NONE),
 		CFG_INT("IMG_BOOTLOADER_ADDR", 0x0, CFGF_NONE),
-		CFG_STR("IMG_KERNEL_PATH", "boot.img", CFGF_NONE),
+		CFG_STR("IMG_KERNEL_PATH", "kernel.img", CFGF_NONE),
 		CFG_INT("IMG_KERNEL_ADDR", 0x300000, CFGF_NONE),
-		CFG_STR("IMG_FILESYS_PATH", "system.img", CFGF_NONE),
-		CFG_INT("IMG_FILESYS_ADDR", 0x4000000, CFGF_NONE),
+		CFG_STR("IMG_ROOTFS_PATH", "rootfs.img", CFGF_NONE),
+		CFG_INT("IMG_ROOTFS_ADDR", 0x4000000, CFGF_NONE),
 
 		CFG_END()
 	};
@@ -219,11 +219,11 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 	}
 	tool_cfg->img_kernel_addr = cfg_getint(cfg, "IMG_KERNEL_ADDR");
 
-	if (tool_cfg->img_filesys_path[0] == '\0') {
-		strcat(tool_cfg->img_filesys_path, tool_cfg->realpath);
-		strcat(tool_cfg->img_filesys_path, cfg_getstr(cfg, "IMG_FILESYS_PATH"));
+	if (tool_cfg->img_rootfs_path[0] == '\0') {
+		strcat(tool_cfg->img_rootfs_path, tool_cfg->realpath);
+		strcat(tool_cfg->img_rootfs_path, cfg_getstr(cfg, "IMG_ROOTFS_PATH"));
 	}
-	tool_cfg->img_filesys_addr = cfg_getint(cfg, "IMG_FILESYS_ADDR");
+	tool_cfg->img_rootfs_addr = cfg_getint(cfg, "IMG_ROOTFS_ADDR");
 
 	/* end */
 	cfg_free(cfg);

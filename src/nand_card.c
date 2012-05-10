@@ -33,11 +33,11 @@ int sd_card_read(struct ingenic_dev *ingenic_dev,
 	retval = usb_send_data_length_to_ingenic(ingenic_dev, block_num);
 	if (retval != 1)
 		return -1;
-	
+
 	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_READ);
 	if (retval != 1)
 		return -1;
-	
+
 	retval = usb_read_data_from_ingenic(ingenic_dev, buf,
 					    block_num * SD_BLOCK_SIZE);
 	if (retval != 1)
@@ -58,26 +58,26 @@ static int sd_card_write(struct ingenic_dev *ingenic_dev,
 	retval = usb_send_data_length_to_ingenic(ingenic_dev, block_num);
 	if (retval != 1)
 		return -1;
-	
+
 	/* do wirte first */
 	retval = usb_send_data_to_ingenic(ingenic_dev, buf,
 					  block_num * SD_BLOCK_SIZE);
 	if (retval != 1)
 		return -1;
-	
+
 	/* then send request */
 	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_PROGRAM);
 	if (retval != 1)
 		return -1;
 
-	
+
 	retval = usb_read_data_from_ingenic(ingenic_dev, hex_data, 8);
 	if (retval != 1)
 		return -1;
-	
+
 	/* printf("Whandshake: %02x %02x %02x %02x.\n",hex_data[0],hex_data[1], */
 	/*        hex_data[2],hex_data[3]); */
-	
+
 	return 1;
 }
 
@@ -90,7 +90,7 @@ int sd_card_init(struct ingenic_dev *ingenic_dev)
 	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_INIT);
 	if (retval != 1)
 		return -1;
-	
+
 	retval = usb_read_data_from_ingenic(ingenic_dev, hex_data, 8);
 	if (retval != 1)
 		return -1;
@@ -249,7 +249,7 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 			/* 	printf("%02x ", */
 			/* 	       (unsigned char)*(readback_data + p)); */
 			/* printf("\n"); */
-			
+
 			if (i + 1 == download_times)
 				retval = memcmp(origin_data, readback_data,
 						last_download_block_num
@@ -263,7 +263,7 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 				return -1;
 			}
 		}
-		
+
 		printf("#");
 		fflush(stdout);
 	}
