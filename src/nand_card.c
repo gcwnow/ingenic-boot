@@ -18,9 +18,9 @@
 
 #include "ingenic_boot.h"
 
-/* 512K per transmiter 0x400 * 512 = 512KB */
+/* 512K max per transmiter 1024 * 512 = 512KB */
 #define SD_BLOCK_SIZE 512
-#define SD_MAX_BLOCK_NUM 0x400
+#define SD_MAX_BLOCK_NUM 1024
 
 /* no handshake */
 int sd_card_read(struct ingenic_dev *ingenic_dev,
@@ -120,24 +120,28 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 		goto out0;
 	}
 
-	/* < 512 */
+	/* <= 512 */
 	last_block_len = fstat.st_size % SD_BLOCK_SIZE;
-	printf(" last_block_len %d ", last_block_len);
 	if (last_block_len)
 		block_nums = fstat.st_size / SD_BLOCK_SIZE + 1;
-	else
+	else {
+		last_block_len = SD_BLOCK_SIZE;		/* == 512 */
 		block_nums = fstat.st_size / SD_BLOCK_SIZE;
+	}
+	printf(" last_block_len %d ", last_block_len);
 	printf("\n block_nums %d ", block_nums);
 
-	/* < 0x400 */
+	/* <= 1024 */
 	last_download_block_num = block_nums % SD_MAX_BLOCK_NUM;
-	printf("\n last_download_block_num %d ", last_download_block_num);
 	if (last_download_block_num)
 		download_times = block_nums / SD_MAX_BLOCK_NUM + 1;
-	else
+	else {
+		last_download_block_num = SD_MAX_BLOCK_NUM;
 		download_times = block_nums / SD_MAX_BLOCK_NUM;
+	}
+	printf("\n last_download_block_num %d ", last_download_block_num);
 	printf("\n download_times %d : ", download_times);
-	
+
 	fd = open(file_path, O_RDONLY);
 	if (fd < 0) {
 		fprintf(stderr, "Error - can't open file '%s': %s\n",
@@ -159,8 +163,10 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 	for (i = 0; i < download_times; i++) {
 
 		/* read file */
-		if (i + 1 == download_times) {
-			if (last_block_len != 0) {
+		if ((i + 1 == download_times) &&
+		    (last_download_block_num != SD_MAX_BLOCK_NUM)) {
+
+			if (last_block_len != SD_BLOCK_SIZE) {
 				retval = read(fd, origin_data,
 					      (last_download_block_num - 1)
 					      * SD_BLOCK_SIZE + last_block_len);
