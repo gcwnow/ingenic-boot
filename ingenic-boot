@@ -1,0 +1,96 @@
+#!/bin/bash
+
+export TOPPATH=$(cd "$(dirname "$0")"; pwd)
+export LD_LIBRARY_PATH=$TOPPATH/lib
+README="$TOPPATH/README"
+
+ARGS=`getopt -a -o h -l probe,boot:,kernel:,rootfs:,check,help -- "$@"`
+[ $? -ne 0 ] && cat "$README" && exit
+#set -- "${ARGS}"
+eval set -- "${ARGS}"
+
+exit="yes"
+
+while true
+do
+	case "$1" in
+	--probe)
+		probe="yes"
+		exit="no"
+		;;
+	--boot)
+		boot="$2@0x00000000"
+		exit="no"
+		;;
+	--kernel)
+		kernel="$2@0x00300000"
+		exit="no"
+		;;
+	--rootfs)
+		rootfs="$2@0x04000000"
+		exit="no"
+		;;
+	--check)
+		check="yes"
+		exit="no"
+		;;
+	-h|--help)
+		exit="no"
+		cat "$README" && exit
+		;;
+	--)
+		shift
+		break
+		;;
+	esac
+shift
+done
+
+[ "$exit" == "yes" ] && cat "$README" && exit
+
+if [ "$probe" == "yes" ]; then
+    echo "probe only"
+    $TOPPATH/bin/basic_cmd_tool probe
+    exit
+fi
+
+if [ "$check" == "yes" ]; then
+    [ -n "$boot" ] && boot="$boot#1"
+    [ -n "$kernel" ] && kernel="$kernel#1"
+    [ -n "$rootfs" ] && rootfs="$rootfs#1"
+else
+    [ -n "$boot" ] && boot="$boot#0"
+    [ -n "$kernel" ] && kernel="$kernel#0"
+    [ -n "$rootfs" ] && rootfs="$rootfs#0"
+fi
+
+if [ ! -e "$TOPPATH/fw/hand.bin" ]; then
+    $TOPPATH/tool/patch_fw.sh || exit
+fi
+
+$TOPPATH/tool/down_fw.sh || exit
+
+echo
+$TOPPATH/bin/stage2_cmd_tool config="$TOPPATH/fw/hand.bin" || exit
+
+$TOPPATH/bin/stage2_cmd_tool sdinit || exit
+
+if [ -n "$boot" ]; then
+    echo
+    $TOPPATH/bin/stage2_cmd_tool sdif="$boot" || exit
+fi
+
+if [ -n "$kernel" ]; then
+    echo
+    $TOPPATH/bin/stage2_cmd_tool sdif="$kernel" || exit
+fi
+
+if [ -n "$rootfs" ]; then
+    echo
+    $TOPPATH/bin/stage2_cmd_tool sdif="$rootfs" || exit
+fi
+
+$TOPPATH/bin/stage2_cmd_tool reboot || exit
+
+echo
+echo "Done."

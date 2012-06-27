@@ -19,25 +19,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CC := gcc
+all: lib/libcmd.so bin/basic_cmd_tool bin/fw_cfg_tool bin/stage2_cmd_tool
 
-SRCS := $(wildcard *.c)
-OBJS := $(patsubst %.c,%.o, $(SRCS))
+lib/libcmd.so : force_look
+	@cd source/basic_cmd_lib; make
+	@echo
 
-LDLIBS = -lusb -lconfuse -lgcc -lm -lc
+bin/basic_cmd_tool : force_look
+	@cd source/basic_cmd_tool; make
+	@echo
 
-all: ingenic_boot
-	mv ingenic_boot ../ingenic-boot
+bin/fw_cfg_tool : force_look
+	@cd source/fw_cfg_tool; make
+	@echo
 
-ingenic_boot: $(OBJS)
-
-include $(SRCS:.c=.d)
-
-%.d : %.c
-	@rm -f $@; \
-	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+bin/stage2_cmd_tool : force_look
+	@cd source/stage2_cmd_tool; make
+	@echo
 
 clean:
-	rm -f ../ingenic-boot *.o *.d
+	@cd source/basic_cmd_lib; make clean;
+	@echo
+	@cd source/basic_cmd_tool; make clean;
+	@echo
+	@cd source/fw_cfg_tool; make clean;
+	@echo
+	@cd source/stage2_cmd_tool; make clean;
+	@echo
+
+force_look :
+	@true

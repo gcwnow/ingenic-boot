@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2006 Ingenic Semiconductor Inc.
+ * Copyright(C) 2012 Ingenic Semiconductor Inc.
  * Authors: Duke Fong <duke@dukelec.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ingenic_boot.h"
+#include "stdio.h"
+#include "../basic_cmd_lib/basic_cmd_lib.h"
+#include "stage2.h"
 
 /* 512K max per transmiter 1024 * 512 = 512KB */
 #define SD_BLOCK_SIZE 512
 #define SD_MAX_BLOCK_NUM 1024
 
 /* no handshake */
-int sd_card_read(struct ingenic_dev *ingenic_dev,
-		 unsigned int block_addr, unsigned int block_num, char *buf)
+static int sd_card_read(struct ingenic_dev *ingenic_dev,
+			unsigned int block_addr, unsigned int block_num,
+			char *buf)
 {
-	int retval;
-	retval = usb_send_data_address_to_ingenic(ingenic_dev, block_addr);
-	if (retval != 1)
-		return -1;
-	retval = usb_send_data_length_to_ingenic(ingenic_dev, block_num);
-	if (retval != 1)
+	if (usb_send_data_address_to_ingenic(ingenic_dev, block_addr))
 		return -1;
 
-	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_READ);
-	if (retval != 1)
+	if (usb_send_data_length_to_ingenic(ingenic_dev, block_num))
 		return -1;
 
-	retval = usb_read_data_from_ingenic(ingenic_dev, buf,
-					    block_num * SD_BLOCK_SIZE);
-	if (retval != 1)
+	if (usb_ingenic_nand_ops(ingenic_dev, CARD_READ))
 		return -1;
-	return 1;
+
+	if (usb_read_data_from_ingenic(ingenic_dev, buf,
+				       block_num * SD_BLOCK_SIZE))
+		return -1;
+
+	return 0;
 }
 
 /* have handshake */
@@ -50,54 +50,50 @@ static int sd_card_write(struct ingenic_dev *ingenic_dev,
 			 unsigned int block_addr,
 			 unsigned int block_num, char *buf)
 {
-	int retval;
 	char hex_data[8];
-	retval = usb_send_data_address_to_ingenic(ingenic_dev, block_addr);
-	if (retval != 1)
+
+	if (usb_send_data_address_to_ingenic(ingenic_dev, block_addr))
 		return -1;
-	retval = usb_send_data_length_to_ingenic(ingenic_dev, block_num);
-	if (retval != 1)
+	if (usb_send_data_length_to_ingenic(ingenic_dev, block_num))
 		return -1;
 
 	/* do wirte first */
-	retval = usb_send_data_to_ingenic(ingenic_dev, buf,
-					  block_num * SD_BLOCK_SIZE);
-	if (retval != 1)
+	if (usb_send_data_to_ingenic(ingenic_dev, buf,
+				     block_num * SD_BLOCK_SIZE))
 		return -1;
 
 	/* then send request */
-	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_PROGRAM);
-	if (retval != 1)
+	if (usb_ingenic_nand_ops(ingenic_dev, CARD_PROGRAM))
 		return -1;
 
 
-	retval = usb_read_data_from_ingenic(ingenic_dev, hex_data, 8);
-	if (retval != 1)
+	if (usb_read_data_from_ingenic(ingenic_dev, hex_data, 8))
 		return -1;
 
-	/* printf("Whandshake: %02x %02x %02x %02x.\n",hex_data[0],hex_data[1], */
-	/*        hex_data[2],hex_data[3]); */
+	/* printf("Whandshake: %02x %02x %02x %02x %02x %02x %02x %02x.\n", */
+	/*        hex_data[0],hex_data[1],hex_data[2],hex_data[3], */
+	/*        hex_data[4],hex_data[5],hex_data[6],hex_data[7]); */
 
-	return 1;
+	return 0;
 }
 
 /* have handshake */
 int sd_card_init(struct ingenic_dev *ingenic_dev)
 {
-	int retval;
 	char hex_data[9];
 	printf("\n#SD init\n");
-	retval = usb_ingenic_nand_ops(ingenic_dev, CARD_INIT);
-	if (retval != 1)
+	if (usb_ingenic_nand_ops(ingenic_dev, CARD_INIT))
 		return -1;
 
-	retval = usb_read_data_from_ingenic(ingenic_dev, hex_data, 8);
-	if (retval != 1)
+	if (usb_read_data_from_ingenic(ingenic_dev, hex_data, 8))
 		return -1;
+
+	/* int i; */
 	/* for (i = 0; i < 8; i++) { */
 	/* 	printf("%x ", *(hex_data + i)); */
 	/* } */
-	return 1;
+
+	return 0;
 }
 
 int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
@@ -128,9 +124,8 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 		last_block_len = SD_BLOCK_SIZE;		/* == 512 */
 		block_nums = fstat.st_size / SD_BLOCK_SIZE;
 	}
-	printf(" last_block_len %d ", last_block_len);
-	printf("\n block_nums %d ", block_nums);
-
+	printf(" last_block_len %d\n", last_block_len);
+	printf(" block_nums %d\n", block_nums);
 	/* <= 1024 */
 	last_download_block_num = block_nums % SD_MAX_BLOCK_NUM;
 	if (last_download_block_num)
@@ -139,8 +134,9 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 		last_download_block_num = SD_MAX_BLOCK_NUM;
 		download_times = block_nums / SD_MAX_BLOCK_NUM;
 	}
-	printf("\n last_download_block_num %d ", last_download_block_num);
-	printf("\n download_times %d : ", download_times);
+	printf(" last_download_block_num %d\n", last_download_block_num);
+	printf(" download_times %d : ", download_times);
+	fflush(stdout);
 
 	fd = open(file_path, O_RDONLY);
 	if (fd < 0) {
@@ -220,7 +216,7 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 					       * i,
 					       SD_MAX_BLOCK_NUM,
 					       origin_data);
-		if (retval != 1)
+		if (retval)
 			break;
 
 		/* check */
@@ -237,8 +233,8 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 						      + SD_MAX_BLOCK_NUM * i,
 						      SD_MAX_BLOCK_NUM,
 						      readback_data);
-			if (retval != 1)
-				return;
+			if (retval)
+				break;
 			/* int p; */
 			/* printf("\n origin  : "); */
 			/* for (p = 0; p < 30; p++) */
@@ -258,7 +254,7 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 				retval = memcmp(origin_data, readback_data,
 						SD_MAX_BLOCK_NUM
 						* SD_BLOCK_SIZE);
-			if (retval != 0) {
+			if (retval) {
 				printf("Check error\n");
 				return -1;
 			}
@@ -277,7 +273,7 @@ int sd_card_program(struct ingenic_dev *ingenic_dev, unsigned int addr,
 	free(origin_data);
 	if (check)
 		free(readback_data);
-	return 1;
+	return 0;
 
 out2:
 	if (check)

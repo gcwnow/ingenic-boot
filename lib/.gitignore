@@ -9,23 +9,15 @@
 #
 # Normal rules
 #
-.*
-*.o
+
+*
 
 #
 # Top-level generic files
 #
-/fw/hand.bin
-/fw/hand.fw_args.bin
-/bin/*
-/lib/*
 
 #
 # git files that we don't want to ignore even it they are dot-files
 #
 !.gitignore
 !.mailmap
-
-# cscope files
-cscope.*
-ncscope.*

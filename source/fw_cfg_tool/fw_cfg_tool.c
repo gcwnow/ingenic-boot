@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2009  Qi Hardware Inc., & 2006 Ingenic Semiconductor Inc.
+ * Copyright(C) 2009  Qi Hardware Inc., & 2012 Ingenic Semiconductor Inc.
  * Authors: Marek Lindner <lindner_marek@yahoo.de>
  *	    Duke Fong <duke@dukelec.com>
  *
@@ -17,9 +17,76 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ingenic_boot.h"
+#include <errno.h>
+#include <confuse.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <limits.h>
 
-extern unsigned int total_size;
+struct fw_args {
+	/* CPU ID */
+	unsigned int  cpu_id;
+	/* PLL args */
+	unsigned char ext_clk;
+	unsigned char cpu_speed;
+	unsigned char phm_div;
+	unsigned char use_uart;
+	unsigned int  boudrate;
+
+	/* SDRAM args */
+	unsigned char bus_width;
+	unsigned char bank_num;
+	unsigned char row_addr;
+	unsigned char col_addr;
+	unsigned char is_mobile;
+	unsigned char is_busshare;
+
+	/* debug args */
+	unsigned char debug_ops;
+	unsigned char pin_num;
+	unsigned int  start;
+	unsigned int  size;
+
+	/* for align */
+//	unsigned char align1;
+//	unsigned char align2;
+};
+
+struct hand {
+	/* nand flash info */
+//	int nand_start;
+	int pt;                 //cpu type: jz4740/jz4750 .....
+	int nand_bw;
+	int nand_rc;
+	int nand_ps;
+	int nand_ppb;
+	int nand_force_erase;
+	int nand_pn;
+	int nand_os;
+	int nand_eccpos;        //ECC position
+	int nand_bbpage;        //bad block position
+	int nand_bbpos;         //bad block position
+	int nand_plane;
+	int nand_bchbit;
+	int nand_wppin;
+	int nand_bpc;
+	int nand_bchstyle;	//device os : linux or minios
+
+	struct fw_args fw_args;
+};
+
+
+//extern unsigned int total_size;
+unsigned int total_size;
 
 static int check_dump_cfg(struct hand *hand)
 {
@@ -27,56 +94,56 @@ static int check_dump_cfg(struct hand *hand)
 	/* check PLL */
 	if (hand->fw_args.ext_clk > 27 || hand->fw_args.ext_clk < 12) {
 		printf(" EXTCLK setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	if (hand->fw_args.phm_div > 32 || hand->fw_args.ext_clk < 2) {
 		printf(" PHMDIV setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	if ((hand->fw_args.cpu_speed * hand->fw_args.ext_clk ) % 12 != 0) {
 		printf(" CPUSPEED setting invalid!\n");
-		return 0;
+		return -1;
 	}
 
 	/* check SDRAM */
 	if (hand->fw_args.bus_width > 1 ) {
 		printf(" SDRAMWIDTH setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	if (hand->fw_args.bank_num > 1 ) {
 		printf(" BANKNUM setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	if (hand->fw_args.row_addr > 13 && hand->fw_args.row_addr < 11 ) {
 		printf(" ROWADDR setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	if (hand->fw_args.col_addr > 13 && hand->fw_args.col_addr < 11 ) {
 		printf(" COLADDR setting invalid!\n");
-		return 0;
+		return -1;
 	}
 
 	/* check NAND */
 	if (hand->nand_ps < 2048 && hand->nand_os > 16) {
 		printf(" PAGESIZE or OOBSIZE setting invalid!\n");
-		printf(" PAGESIZE is %d,\t OOBSIZE is %d\n", 
+		printf(" PAGESIZE is %d,\t OOBSIZE is %d\n",
 		       hand->nand_ps, hand->nand_os);
-		return 0;
+		return -1;
 	}
 	if (hand->nand_ps < 2048 && hand->nand_ppb > 32) {
 		printf(" PAGESIZE or PAGEPERBLOCK setting invalid!\n");
-		return 0;
+		return -1;
 	}
 
 	if (hand->nand_ps > 512 && hand->nand_os <= 16) {
 		printf(" PAGESIZE or OOBSIZE setting invalid!\n");
-		printf(" PAGESIZE is %d,\t OOBSIZE is %d\n", 
+		printf(" PAGESIZE is %d,\t OOBSIZE is %d\n",
 		       hand->nand_ps, hand->nand_os);
-		return 0;
+		return -1;
 	}
 	if (hand->nand_ps > 512 && hand->nand_ppb < 64) {
 		printf(" PAGESIZE or PAGEPERBLOCK setting invalid!\n");
-		return 0;
+		return -1;
 	}
 	printf(" YES\n");
 
@@ -87,7 +154,7 @@ static int check_dump_cfg(struct hand *hand)
 		((unsigned int)hand->fw_args.cpu_speed * hand->fw_args.ext_clk) / hand->fw_args.phm_div);
 
 	printf(" SDRAM Total size is %d MB, work in %d bank and %d bit mode\n",
-		total_size / 0x100000, 2 * (hand->fw_args.bank_num + 1), 
+		total_size / 0x100000, 2 * (hand->fw_args.bank_num + 1),
 	       16 * (2 - hand->fw_args.bus_width));
 
 	printf(" Nand page per block %d, "
@@ -102,14 +169,11 @@ static int check_dump_cfg(struct hand *hand)
 	       hand->nand_bbpos,
 	       hand->nand_bbpage,
 	       hand->nand_plane);
-	return 1;
+	return 0;
 }
 
-int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
+int parse_configure(struct hand *hand, char * file_path)
 {
-	struct hand *hand = &ingenic_dev->hand;
-	struct tool_cfg *tool_cfg = &ingenic_dev->tool_cfg;
-	
 	if (access(file_path, F_OK)) {
 		fprintf(stderr, "Error - can't read configure file %s.\n",
 			file_path);
@@ -117,6 +181,9 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 	}
 
 	cfg_opt_t opts[] = {
+
+		CFG_INT("CPU_ID", 0x4770, CFGF_NONE),
+
 		CFG_INT("BOUDRATE", 57600, CFGF_NONE),
 		CFG_INT("EXTCLK", 0, CFGF_NONE),
 		CFG_INT("CPUSPEED", 0, CFGF_NONE),
@@ -149,16 +216,6 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 		CFG_INT("NAND_WPPIN", 0, CFGF_NONE),
 		CFG_INT("NAND_BLOCKPERCHIP", 0, CFGF_NONE),
 
-		/* fileset of tool_cfg */
-		CFG_STR("FW_STAGE1_PATH", "fw/stage1.bin", CFGF_NONE),
-		CFG_STR("FW_STAGE2_PATH", "fw/stage2.bin", CFGF_NONE),
-		CFG_STR("IMG_BOOTLOADER_PATH", "boot.bin", CFGF_NONE),
-		CFG_INT("IMG_BOOTLOADER_ADDR", 0x0, CFGF_NONE),
-		CFG_STR("IMG_KERNEL_PATH", "kernel.img", CFGF_NONE),
-		CFG_INT("IMG_KERNEL_ADDR", 0x300000, CFGF_NONE),
-		CFG_STR("IMG_ROOTFS_PATH", "rootfs.img", CFGF_NONE),
-		CFG_INT("IMG_ROOTFS_ADDR", 0x4000000, CFGF_NONE),
-
 		CFG_END()
 	};
 
@@ -166,6 +223,8 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 	cfg = cfg_init(opts, CFGF_NONE);
 	if (cfg_parse(cfg, file_path) == CFG_PARSE_ERROR)
 		return -1;
+
+	hand->fw_args.cpu_id = cfg_getint(cfg, "CPU_ID");
 
 	hand->fw_args.boudrate = cfg_getint(cfg, "BOUDRATE");
 	hand->fw_args.ext_clk = cfg_getint(cfg, "EXTCLK");
@@ -199,32 +258,6 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 	hand->nand_wppin = cfg_getint(cfg, "NAND_WPPIN");
 	hand->nand_bpc = cfg_getint(cfg, "NAND_BLOCKPERCHIP");
 
-	/* tool_cfg */
-	strcat(tool_cfg->fw_stage1_path, tool_cfg->realpath);
-	strcat(tool_cfg->fw_stage1_path, cfg_getstr(cfg, "FW_STAGE1_PATH"));
-	
-	strcat(tool_cfg->fw_stage2_path, tool_cfg->realpath);
-	strcat(tool_cfg->fw_stage2_path, cfg_getstr(cfg, "FW_STAGE2_PATH"));
-
-	if (tool_cfg->img_bootloader_path[0] == '\0') {
-		strcat(tool_cfg->img_bootloader_path, tool_cfg->realpath);
-		strcat(tool_cfg->img_bootloader_path,
-		       cfg_getstr(cfg, "IMG_BOOTLOADER_PATH"));
-	}
-	tool_cfg->img_bootloader_addr = cfg_getint(cfg, "IMG_BOOTLOADER_ADDR");
-
-	if (tool_cfg->img_kernel_path[0] == '\0') {
-		strcat(tool_cfg->img_kernel_path, tool_cfg->realpath);
-		strcat(tool_cfg->img_kernel_path, cfg_getstr(cfg, "IMG_KERNEL_PATH"));
-	}
-	tool_cfg->img_kernel_addr = cfg_getint(cfg, "IMG_KERNEL_ADDR");
-
-	if (tool_cfg->img_rootfs_path[0] == '\0') {
-		strcat(tool_cfg->img_rootfs_path, tool_cfg->realpath);
-		strcat(tool_cfg->img_rootfs_path, cfg_getstr(cfg, "IMG_ROOTFS_PATH"));
-	}
-	tool_cfg->img_rootfs_addr = cfg_getint(cfg, "IMG_ROOTFS_ADDR");
-
 	/* end */
 	cfg_free(cfg);
 
@@ -232,42 +265,56 @@ int parse_configure(struct ingenic_dev *ingenic_dev, char * file_path)
 		hand->fw_args.bus_width = 0;
 	else
 		hand->fw_args.bus_width = 1;
-	hand->fw_args.bank_num = hand->fw_args.bank_num / 4; 
+	hand->fw_args.bank_num = hand->fw_args.bank_num / 4;
 	hand->fw_args.cpu_speed = hand->fw_args.cpu_speed / hand->fw_args.ext_clk;
-	
+
 	total_size = (unsigned int)
-		(2 << (hand->fw_args.row_addr + hand->fw_args.col_addr - 1)) * 2 
-		* (hand->fw_args.bank_num + 1) * 2 
+		(2 << (hand->fw_args.row_addr + hand->fw_args.col_addr - 1)) * 2
+		* (hand->fw_args.bank_num + 1) * 2
 		* (2 - hand->fw_args.bus_width);
 
-	if (check_dump_cfg(hand) < 1)
+	if (check_dump_cfg(hand))
 		return -1;
 
-	return 1;
+	return 0;
 }
 
-/* after upload stage2. must init device */
-int init_cfg(struct ingenic_dev *ingenic_dev)
+int main (int argc, char *argv[])
 {
-	unsigned char ret[8];
-	ingenic_dev->hand.fw_args.cpu_id = ingenic_dev->cpu_id;
+	struct hand hand;
 
-	/* send data first */
-	if (usb_send_data_to_ingenic(ingenic_dev, &ingenic_dev->hand,
-				     sizeof (struct hand)) != 1)
-		goto xout;
+	if (argc != 1) {
+		printf("Usage: Generate hand.bin, hand.fw_args.bin "
+		       "from current.cfg, no argument needed!\n");
+		return -1;
+	}
 
-	usleep(2000);
-	if (usb_ingenic_configration(ingenic_dev, DS_hand) != 1)
-		goto xout;
-	
-	if (usb_read_data_from_ingenic(ingenic_dev, ret, 8) != 1)
-		goto xout;
+	if (parse_configure(&hand, "current.cfg"))
+		return -1;
 
-	printf(" Configuring XBurst CPU succeeded.\n");
-	return 1;
-xout:
-	printf(" Configuring XBurst CPU failed.\n");
-	return -1;
+	int fd = open("hand.bin", O_CREAT | O_WRONLY | O_TRUNC,
+		      S_IRUSR | S_IRGRP | S_IROTH);
 
+	if (fd < 0) {
+		fprintf(stderr, "Error - can't create file '%s': %s\n",
+			"hand.bin", strerror(errno));
+		return -1;
+	}
+
+	write(fd, &hand, sizeof (struct hand));
+
+	close(fd);
+
+	fd = open("hand.fw_args.bin", O_CREAT | O_WRONLY | O_TRUNC,
+		  S_IRUSR | S_IRGRP | S_IROTH);
+
+	if (fd < 0) {
+		fprintf(stderr, "Error - can't create file '%s': %s\n",
+			"hand.fw_args.bin", strerror(errno));
+		return -1;
+	}
+
+	write(fd, &hand.fw_args, sizeof (struct fw_args));
+
+	close(fd);
 }

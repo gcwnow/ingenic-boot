@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INGENIC_BOOT_H__
-#define __INGENIC_BOOT_H__
+#ifndef __STAGE2_CMD_TOOL_H__
+#define __STAGE2_CMD_TOOL_H__
 
 #include <errno.h>
 #include <confuse.h>
@@ -34,125 +34,9 @@
 #include <ctype.h>
 #include <limits.h>
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-
-/*-------------------------------------------------------------------------*/
-
-struct fw_args {
-	/* CPU ID */
-	unsigned int  cpu_id;
-	/* PLL args */
-	unsigned char ext_clk;
-	unsigned char cpu_speed;
-	unsigned char phm_div;
-	unsigned char use_uart;
-	unsigned int  boudrate;
-
-	/* SDRAM args */
-	unsigned char bus_width;
-	unsigned char bank_num;
-	unsigned char row_addr;
-	unsigned char col_addr;
-	unsigned char is_mobile;
-	unsigned char is_busshare;
-
-	/* debug args */
-	unsigned char debug_ops;
-	unsigned char pin_num;
-	unsigned int  start;
-	unsigned int  size;
-	
-	/* for align */
-//	unsigned char align1;
-//	unsigned char align2;
-};
-
-struct hand {
-	/* nand flash info */
-//	int nand_start;
-	int pt;                 //cpu type: jz4740/jz4750 .....
-	int nand_bw;
-	int nand_rc;
-	int nand_ps;
-	int nand_ppb;
-	int nand_force_erase;
-	int nand_pn;
-	int nand_os;
-	int nand_eccpos;        //ECC position
-	int nand_bbpage;        //bad block position
-	int nand_bbpos;         //bad block position
-	int nand_plane;
-	int nand_bchbit;
-	int nand_wppin;
-	int nand_bpc;
-	int nand_bchstyle;		//device os : linux or minios
-
-	struct fw_args fw_args;
-};
-
-/*-------------------------------------------------------------------------*/
-
-struct tool_cfg {
-	char		realpath[PATH_MAX];
-	char		fw_stage1_path[PATH_MAX];
-	char		fw_stage2_path[PATH_MAX];
-	char		img_bootloader_path[PATH_MAX];
-	unsigned int	img_bootloader_addr;
-	char		img_kernel_path[PATH_MAX];
-	unsigned int	img_kernel_addr;
-	char		img_rootfs_path[PATH_MAX];
-	unsigned int	img_rootfs_addr;
-};
-
-enum BOOT_STAGE {
-	DISCONNECT = 0,
-	UNBOOT,
-	BOOT,
-};
-
-struct ingenic_dev {
-	struct usb_device	*usb_dev;
-	struct usb_dev_handle	*usb_handle;
-	uint8_t			interface;
-	unsigned int		cpu_id;
-	enum BOOT_STAGE		boot_stage;
-	/* unsigned int		addr; */
-	/* char			*buf; */
-	/* int			len; */
-	struct hand		hand;		/* board config */
-	struct tool_cfg		tool_cfg;
-};
-
-struct vid_pid {
-	uint16_t		vid;
-	uint16_t		pid;
-};
-
-/*-------------------------------------------------------------------------*/
-
-#define USB_TIMEOUT	5000
-#define INGENIC_OUT_ENDPOINT	0x01
-#define INGENIC_IN_ENDPOINT	0x81
-#define CODE_SIZE  ( 4 * 1024 * 1024 )
-#define STAGE_ADDR_MSB(addr) ((addr) >> 16)
-#define STAGE_ADDR_LSB(addr) ((addr) & 0xffff)
-
-enum UDC_STATE
+enum USB_JZ4740_REQUEST_STAGE2
 {
-	IDLE,
-	BULK_IN,
-	BULK_OUT
-};
-
-enum USB_JZ4740_REQUEST            //add for USB_BOOT
-{
-	VR_GET_CPU_INFO = 0,
-	VR_SET_DATA_ADDRESS,
-	VR_SET_DATA_LENGTH,
-	VR_FLUSH_CACHES,
-	VR_PROGRAM_START1,
-	VR_PROGRAM_START2,
-	VR_NOR_OPS,
+	VR_NOR_OPS = 6,
 	VR_NAND_OPS,
 	VR_SDRAM_OPS,
 	VR_CONFIGRATION,
@@ -264,4 +148,4 @@ enum OPTION
 
 /*-------------------------------------------------------------------------*/
 
-#endif	/*__INGENIC_BOOT_H__ */
+#endif	/*__STAGE2_CMD_TOOL_H__ */
