@@ -19,15 +19,15 @@ do
 		exit="no"
 		;;
 	--boot)
-		boot="$2@0x00000000"
+		boot="$2@0x00000200"
 		exit="no"
 		;;
 	--kernel)
-		kernel="$2@0x00300000"
+		kernel="$2@0x00400000"
 		exit="no"
 		;;
 	--rootfs)
-		rootfs="$2@0x04000000"
+		rootfs="$2@0x00C00000"
 		exit="no"
 		;;
 	--check)
