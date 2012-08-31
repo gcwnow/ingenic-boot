@@ -3,7 +3,7 @@
 #
 # type this at the command prompt: sudo cp 99-IngenicBoot.rules /etc/udev/rules.d
 
-SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", SYSFS{idVendor}=="601a", SYSFS{idProduct}=="4740", MODE="0666"
-SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", SYSFS{idVendor}=="601a", SYSFS{idProduct}=="4750", MODE="0666"
-SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", SYSFS{idVendor}=="601a", SYSFS{idProduct}=="4760", MODE="0666"
-SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", SYSFS{idVendor}=="a108", SYSFS{idProduct}=="4770", MODE="0666"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="601a", ATTR{idProduct}=="4740", MODE="0666"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="601a", ATTR{idProduct}=="4750", MODE="0666"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="601a", ATTR{idProduct}=="4760", MODE="0666"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="a108", ATTR{idProduct}=="4770", MODE="0666"
