@@ -19,7 +19,7 @@ do
 		exit="no"
 		;;
 	--boot)
-		boot="$2@0x00000200"
+		boot="$2@0x00000000"
 		exit="no"
 		;;
 	--kernel)
