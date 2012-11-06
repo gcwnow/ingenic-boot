@@ -23,7 +23,7 @@ do
 		exit="no"
 		;;
 	--kernel)
-		kernel="$2@0x00400000"
+		kernel="$2@0x00004000"
 		exit="no"
 		;;
 	--rootfs)
