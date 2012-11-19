@@ -4,7 +4,7 @@ export TOPPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOPPATH/lib
 README="$TOPPATH/README"
 
-ARGS=`getopt -a -o h -l probe,boot:,kernel:,rootfs:,check,help -- "$@"`
+ARGS=`getopt -a -o h -l probe,boot:,bootloader:,kernel:,rootfs:,check,help -- "$@"`
 [ $? -ne 0 ] && cat "$README" && exit
 #set -- "${ARGS}"
 eval set -- "${ARGS}"
@@ -20,6 +20,10 @@ do
 		;;
 	--boot)
 		boot="$2@0x00000000"
+		exit="no"
+		;;
+	--bootloader)
+		boot="$2@0x00000200"
 		exit="no"
 		;;
 	--kernel)

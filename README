@@ -14,6 +14,7 @@ Command line options:
 	--help or -h		: this help screen
 	--probe			: only get device CPU infomation
 	--boot=<filename>	: download the boot image to device
+	--bootloader=<filename>	: download the boot loader to device (skip MBR)
 	--kernel=<filename>	: download the kernel image to device
 	--rootfs=<filename>	: download the rootfs image to device
 	--check			: read data back and check
