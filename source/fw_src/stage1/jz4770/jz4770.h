@@ -4317,8 +4317,8 @@ do {						\
 
 #define __gpio_port_as_output0(p, o)		\
 do {						\
-    REG_GPIO_PXINTC(p) = (1 << (o));		\						
-    REG_GPIO_PXMASKS(p) = (1 << (o));		\						
+    REG_GPIO_PXINTC(p) = (1 << (o));		\
+    REG_GPIO_PXMASKS(p) = (1 << (o));		\
     REG_GPIO_PXPAT1C(p) = (1 << (o));		\
     REG_GPIO_PXPAT0C(p) = (1 << (o));		\
 } while (0)
