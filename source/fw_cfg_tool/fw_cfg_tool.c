@@ -293,7 +293,7 @@ int main (int argc, char *argv[])
 		return -1;
 
 	int fd = open("hand.bin", O_CREAT | O_WRONLY | O_TRUNC,
-		      S_IRUSR | S_IRGRP | S_IROTH);
+		      S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 
 	if (fd < 0) {
 		fprintf(stderr, "Error - can't create file '%s': %s\n",
@@ -306,7 +306,7 @@ int main (int argc, char *argv[])
 	close(fd);
 
 	fd = open("hand.fw_args.bin", O_CREAT | O_WRONLY | O_TRUNC,
-		  S_IRUSR | S_IRGRP | S_IROTH);
+		  S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 
 	if (fd < 0) {
 		fprintf(stderr, "Error - can't create file '%s': %s\n",
