@@ -89,11 +89,4 @@ void c_main(void)
 	sdram_init_4770();
 
 	serial_puts("Setup fw args finish!\n");
-
-	__asm__ (
-		"li  $31, 0xbfc0130c \n\t"
-		"jr  $31 \n\t "
-		);
 }
-
-
