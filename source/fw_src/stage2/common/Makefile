@@ -93,21 +93,15 @@ clean:
 	
 info_4740:
 	@echo compiled usb_boot.bin for jz4740 ^_^ OK
-	cp usb_boot.bin ../../../Debug/4740/
 
 info_4750:
 	@echo compiled usb_boot.bin for jz4750 ^_^ OK
-	cp usb_boot.bin ../../../Debug/4755/
-	cp usb_boot.bin ../../../Debug/4750/
-	cp usb_boot.bin ../../../Debug/4725B/
 	
 info_4760:
 	@echo compiled usb_boot.bin for jz4760 ^_^ OK
-	cp usb_boot.bin ../../../Debug/4760/
 	
 info_4770:
 	@echo compiled usb_boot.bin for jz4770 ^_^ OK
-	cp usb_boot.bin ../../../Debug/4770/
 	 	
 4740:clean 4740_config all_platform info_4740
 
@@ -116,4 +110,3 @@ info_4770:
 4760:clean 4760_config all_platform info_4760
 	
 4770:clean 4770_config all_platform info_4770
-
