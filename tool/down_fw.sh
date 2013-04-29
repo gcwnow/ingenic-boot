@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ -z "$1" ]; then
+    echo "Usage: down_fw.sh <config>"
+    exit 2
+fi
+config="$1"
+
+FW_CFG=fw-cfg-${config}.bin
+USB_CFG=usb_boot-cfg-${config}.bin
+
 echo
 echo "probe 1th"
 $TOPPATH/bin/basic_cmd_tool probe || exit
@@ -9,8 +18,8 @@ echo "addr set 0x80002000"
 $TOPPATH/bin/basic_cmd_tool addr=0x80002000 || exit
 
 echo
-echo "download fw_ddr2.bin"
-$TOPPATH/bin/basic_cmd_tool if="$TOPPATH/fw/fw_ddr2.bin" || exit
+echo "download $FW_CFG"
+$TOPPATH/bin/basic_cmd_tool if="$TOPPATH/fw/$FW_CFG" || exit
 
 echo
 echo "start1@0x80002000"
@@ -25,8 +34,8 @@ echo "addr set 0x80002000"
 $TOPPATH/bin/basic_cmd_tool addr=0x80002000 || exit
 
 echo
-echo "download usb_boot.bin"
-$TOPPATH/bin/basic_cmd_tool if="$TOPPATH/fw/usb_boot.bin" || exit
+echo "download $USB_CFG"
+$TOPPATH/bin/basic_cmd_tool if="$TOPPATH/fw/$USB_CFG" || exit
 
 echo
 echo "flush cache"

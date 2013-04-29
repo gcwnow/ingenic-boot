@@ -6,6 +6,7 @@ export LD_LIBRARY_PATH=$TOOLPATH/../lib
 helpmsg()
 {
     echo "download file to memory:"
+    echo "	hardware config specified by --config=XXX"
     echo "	file name specified by --bin=XXX"
     echo "	download addr specified by --downto=XXX"
     echo "	execute addr specified by --runat=XXX"
@@ -20,6 +21,9 @@ eval set -- "${ARGS}"
 while true
 do
 	case "$1" in
+	--config)
+		config="$2"
+		;;
 	--bin)
 		bin="$2"
 		;;
@@ -40,13 +44,12 @@ do
 shift
 done
 
+[ ! -n "$config" ] && helpmsg && exit
 [ ! -n "$bin" ] && helpmsg && exit
 [ ! -n "$downto" ] && helpmsg && exit
 [ ! -n "$runat" ] && helpmsg && exit
 
-if [ ! -e "$TOOLPATH/../fw/hand.bin" ]; then
-    $TOOLPATH/patch_fw.sh || exit
-fi
+$TOOLPATH/patch_fw.sh "$config" || exit
 
 echo
 echo "probe 1th"
@@ -57,8 +60,8 @@ echo "addr set 0x80002000"
 $TOOLPATH/../bin/basic_cmd_tool addr=0x80002000 || exit
 
 echo
-echo "download fw_ddr2.bin"
-$TOOLPATH/../bin/basic_cmd_tool if="$TOOLPATH/../fw/fw_ddr2.bin" || exit
+echo "download fw-cfg-${config}.bin"
+$TOOLPATH/../bin/basic_cmd_tool if="$TOOLPATH/../fw/fw-cfg-${config}.bin" || exit
 
 echo
 echo "start1@0x80002000"

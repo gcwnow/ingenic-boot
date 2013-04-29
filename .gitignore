@@ -15,8 +15,10 @@
 #
 # Top-level generic files
 #
-/fw/hand.bin
-/fw/hand.fw_args.bin
+/fw/fw-cfg-*.bin
+/fw/hand-*.bin
+/fw/hand-fw-*.bin
+/fw/usb_boot-cfg-*.bin
 /bin/*
 /lib/*
 

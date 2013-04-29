@@ -4,7 +4,7 @@ export TOPPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOPPATH/lib
 README="$TOPPATH/README"
 
-ARGS=`getopt -a -o h -l probe,boot:,bootloader:,kernel:,rootfs:,check,help -- "$@"`
+ARGS=`getopt -a -o h -l probe,config:,boot:,bootloader:,kernel:,rootfs:,check,help -- "$@"`
 [ $? -ne 0 ] && cat "$README" && exit
 #set -- "${ARGS}"
 eval set -- "${ARGS}"
@@ -16,6 +16,10 @@ do
 	case "$1" in
 	--probe)
 		probe="yes"
+		exit="no"
+		;;
+	--config)
+		config="$2"
 		exit="no"
 		;;
 	--boot)
@@ -58,6 +62,12 @@ if [ "$probe" == "yes" ]; then
     exit
 fi
 
+if [ -z "$config" ]; then
+    configfile=$(readlink fw/current.cfg)
+    config=${configfile%.cfg}
+fi
+echo "Using board configuration: ${config}"
+
 if [ "$check" == "yes" ]; then
     [ -n "$boot" ] && boot="$boot#1"
     [ -n "$kernel" ] && kernel="$kernel#1"
@@ -68,14 +78,12 @@ else
     [ -n "$rootfs" ] && rootfs="$rootfs#0"
 fi
 
-if [ ! -e "$TOPPATH/fw/hand.bin" ]; then
-    $TOPPATH/tool/patch_fw.sh || exit
-fi
+$TOPPATH/tool/patch_fw.sh ${config} || exit
 
-$TOPPATH/tool/down_fw.sh || exit
+$TOPPATH/tool/down_fw.sh ${config} || exit
 
 echo
-$TOPPATH/bin/stage2_cmd_tool config="$TOPPATH/fw/hand.bin" || exit
+$TOPPATH/bin/stage2_cmd_tool config="$TOPPATH/fw/hand-${config}.bin" || exit
 
 $TOPPATH/bin/stage2_cmd_tool sdinit || exit
 

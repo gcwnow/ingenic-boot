@@ -13,14 +13,16 @@ To access the ingenic hardware without being root:
 Command line options:
 	--help or -h		: this help screen
 	--probe			: only get device CPU infomation
+	--config=<board>	: hardware configuration
 	--boot=<filename>	: download the boot image to device
 	--bootloader=<filename>	: download the boot loader to device (skip MBR)
 	--kernel=<filename>	: download the kernel image to device
 	--rootfs=<filename>	: download the rootfs image to device
 	--check			: read data back and check
 
-The default configuration file is "fw/current.cfg", may need change it for
-your board.
+To support a new board, create a configuration file "fw/<board>.cfg" for your
+board. You can make it the default configuration by symlinking "fw/current.cfg"
+to your "<board>.cfg".
 
 Current version 2.0, future version will support NAND operation, GPIO test,
 etc.. and do more test.

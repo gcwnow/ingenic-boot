@@ -172,7 +172,7 @@ static int check_dump_cfg(struct hand *hand)
 	return 0;
 }
 
-int parse_configure(struct hand *hand, char * file_path)
+int parse_configure(struct hand *hand, const char *file_path)
 {
 	if (access(file_path, F_OK)) {
 		fprintf(stderr, "Error - can't read configure file %s.\n",
@@ -190,6 +190,7 @@ int parse_configure(struct hand *hand, char * file_path)
 		CFG_INT("PHMDIV", 0, CFGF_NONE),
 		CFG_INT("USEUART", 0, CFGF_NONE),
 
+		CFG_STR("RAMTYPE", "ddr2", CFGF_NONE),
 		CFG_INT("BUSWIDTH", 0, CFGF_NONE),
 		CFG_INT("BANKS", 0, CFGF_NONE),
 		CFG_INT("ROWADDR", 0, CFGF_NONE),
@@ -279,42 +280,89 @@ int parse_configure(struct hand *hand, char * file_path)
 	return 0;
 }
 
-int main (int argc, char *argv[])
+char *create_file_name(const char *template, const char *config)
+{
+	char *buf;
+	int size, ret;
+
+	ret = snprintf(NULL, 0, template, config);
+	if (ret < 0)
+		return NULL;
+	size = ret + 1;
+
+	buf = malloc(size);
+	if (!buf)
+		return NULL;
+
+	ret = snprintf(buf, size, template, config);
+	if (ret == size - 1)
+		return buf;
+
+	free(buf);
+	return NULL;
+}
+
+int main(int argc, char *argv[])
 {
 	struct hand hand;
+	const char *config;
+	const char *config_file_name, *hand_file_name, *fw_file_name;
+	int ret = 0;
 
-	if (argc != 1) {
-		printf("Usage: Generate hand.bin, hand.fw_args.bin "
-		       "from current.cfg, no argument needed!\n");
-		return -1;
+	if (argc != 2) {
+		printf("Usage: fw_cfg_tool <config>\n"
+		       "Generates hand-<config>.bin and hand-fw-<config>.bin "
+		       "from <config>.cfg\n");
+		return 2;
 	}
 
-	if (parse_configure(&hand, "current.cfg"))
-		return -1;
+	config = argv[1];
+	config_file_name = create_file_name("%s.cfg", config);
+	hand_file_name = create_file_name("hand-%s.bin", config);
+	fw_file_name = create_file_name("hand-fw-%s.bin", config);
+	if (!config_file_name || !hand_file_name || !fw_file_name) {
+		fprintf(stderr, "Error creating file names from config name\n");
+		ret = 2;
+		goto done;
+	}
 
-	int fd = open("hand.bin", O_CREAT | O_WRONLY | O_TRUNC,
+	memset(&hand, 0, sizeof(hand));
+	if (parse_configure(&hand, config_file_name)) {
+		ret = 1;
+		goto done;
+	}
+
+	int fd = open(hand_file_name, O_CREAT | O_WRONLY | O_TRUNC,
 		      S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 
 	if (fd < 0) {
 		fprintf(stderr, "Error - can't create file '%s': %s\n",
 			"hand.bin", strerror(errno));
-		return -1;
+		ret = 1;
+		goto done;
 	}
 
 	write(fd, &hand, sizeof (struct hand));
 
 	close(fd);
 
-	fd = open("hand.fw_args.bin", O_CREAT | O_WRONLY | O_TRUNC,
+	fd = open(fw_file_name, O_CREAT | O_WRONLY | O_TRUNC,
 		  S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 
 	if (fd < 0) {
 		fprintf(stderr, "Error - can't create file '%s': %s\n",
 			"hand.fw_args.bin", strerror(errno));
-		return -1;
+		ret = 1;
+		goto done;
 	}
 
 	write(fd, &hand.fw_args, sizeof (struct fw_args));
 
 	close(fd);
+
+done:
+	free((void *)config_file_name);
+	free((void *)hand_file_name);
+	free((void *)fw_file_name);
+	return ret;
 }
