@@ -4,7 +4,7 @@ export TOPPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOPPATH/lib
 README="$TOPPATH/README"
 
-ARGS=`getopt -a -o h -l probe,config:,boot:,bootloader:,kernel:,rootfs:,check,help -- "$@"`
+ARGS=`getopt -a -o h -l probe,config:,mbr:,boot:,system:,data:,check,help -- "$@"`
 [ $? -ne 0 ] && cat "$README" && exit
 #set -- "${ARGS}"
 eval set -- "${ARGS}"
@@ -22,20 +22,20 @@ do
 		config="$2"
 		exit="no"
 		;;
-	--boot)
-		boot="$2@0x00000000"
+	--mbr)
+		mbr="$2@0x00000000"
 		exit="no"
 		;;
-	--bootloader)
+	--boot)
 		boot="$2@0x00000200"
 		exit="no"
 		;;
-	--kernel)
-		kernel="$2@0x00004000"
+	--system)
+		system="$2@0x00004000"
 		exit="no"
 		;;
-	--rootfs)
-		rootfs="$2@0x19000000"
+	--data)
+		data="$2@0x19000000"
 		exit="no"
 		;;
 	--check)
@@ -69,13 +69,15 @@ fi
 echo "Using board configuration: ${config}"
 
 if [ "$check" == "yes" ]; then
+    [ -n "$mbr" ] && mbr="$mbr#1"
     [ -n "$boot" ] && boot="$boot#1"
-    [ -n "$kernel" ] && kernel="$kernel#1"
-    [ -n "$rootfs" ] && rootfs="$rootfs#1"
+    [ -n "$system" ] && system="$system#1"
+    [ -n "$data" ] && data="$data#1"
 else
+    [ -n "$mbr" ] && mbr="$mbr#0"
     [ -n "$boot" ] && boot="$boot#0"
-    [ -n "$kernel" ] && kernel="$kernel#0"
-    [ -n "$rootfs" ] && rootfs="$rootfs#0"
+    [ -n "$system" ] && system="$system#0"
+    [ -n "$data" ] && data="$data#0"
 fi
 
 $TOPPATH/tool/patch_fw.sh ${config} || exit
@@ -87,19 +89,24 @@ $TOPPATH/bin/stage2_cmd_tool config="$TOPPATH/fw/hand-${config}.bin" || exit
 
 $TOPPATH/bin/stage2_cmd_tool sdinit || exit
 
+if [ -n "$mbr" ]; then
+    echo
+    $TOPPATH/bin/stage2_cmd_tool sdif="$mbr" || exit
+fi
+
 if [ -n "$boot" ]; then
     echo
     $TOPPATH/bin/stage2_cmd_tool sdif="$boot" || exit
 fi
 
-if [ -n "$kernel" ]; then
+if [ -n "$system" ]; then
     echo
-    $TOPPATH/bin/stage2_cmd_tool sdif="$kernel" || exit
+    $TOPPATH/bin/stage2_cmd_tool sdif="$system" || exit
 fi
 
-if [ -n "$rootfs" ]; then
+if [ -n "$data" ]; then
     echo
-    $TOPPATH/bin/stage2_cmd_tool sdif="$rootfs" || exit
+    $TOPPATH/bin/stage2_cmd_tool sdif="$data" || exit
 fi
 
 $TOPPATH/bin/stage2_cmd_tool reboot || exit

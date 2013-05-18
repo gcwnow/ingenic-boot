@@ -14,10 +14,10 @@ Command line options:
 	--help or -h		: this help screen
 	--probe			: only get device CPU infomation
 	--config=<board>	: hardware configuration
-	--boot=<filename>	: download the boot image to device
-	--bootloader=<filename>	: download the boot loader to device (skip MBR)
-	--kernel=<filename>	: download the kernel image to device
-	--rootfs=<filename>	: download the rootfs image to device
+	--mbr=<filename>	: download the master boot record to device
+	--boot=<filename>	: download the boot loader to device
+	--system=<filename>	: download the system image to device
+	--data=<filename>	: download the data image to device
 	--check			: read data back and check
 
 To support a new board, create a configuration file "fw/<board>.cfg" for your
