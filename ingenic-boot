@@ -35,7 +35,7 @@ do
 		exit="no"
 		;;
 	--rootfs)
-		rootfs="$2@0x01000000"
+		rootfs="$2@0x19000000"
 		exit="no"
 		;;
 	--check)
