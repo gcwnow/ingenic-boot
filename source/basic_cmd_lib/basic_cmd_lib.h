@@ -82,7 +82,9 @@ enum USB_JZ4740_REQUEST_BASIC
 
 /*-------------------------------------------------------------------------*/
 
-int usb_ingenic_init(struct ingenic_dev *ingenic_dev);
+int usb_ingenic_init(struct ingenic_dev *ingenic_dev,
+		     const char *bus_filter,
+		     const char *dev_filter);
 void usb_ingenic_cleanup(struct ingenic_dev *ingenic_dev);
 int usb_get_ingenic_cpu(struct ingenic_dev *ingenic_dev);
 int usb_ingenic_flush_cache(struct ingenic_dev *ingenic_dev);

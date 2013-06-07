@@ -29,7 +29,9 @@ static const struct vid_pid ingenic_vid_pid[] = {
 	{ },
 };
 
-static int get_ingenic_device(struct ingenic_dev *ingenic_dev)
+static int get_ingenic_device(struct ingenic_dev *ingenic_dev,
+			      const char *bus_filter,
+			      const char *dev_filter)
 {
 	struct usb_bus *usb_busses, *usb_bus;
 	struct usb_device *usb_dev;
@@ -40,14 +42,24 @@ static int get_ingenic_device(struct ingenic_dev *ingenic_dev)
 
 	for (usb_bus = usb_busses; usb_bus != NULL; usb_bus = usb_bus->next) {
 
+		if (bus_filter && strcmp(bus_filter, usb_bus->dirname))
+			continue;
+
 		for (usb_dev = usb_bus->devices; usb_dev != NULL;
 		     usb_dev = usb_dev->next) {
+
+			if (dev_filter && strcmp(dev_filter, usb_dev->filename))
+				continue;
 
 			for(i = ingenic_vid_pid; i->vid; i++) {
 				if ((usb_dev->descriptor.idVendor == i->vid) &&
 				    (usb_dev->descriptor.idProduct == i->pid)) {
 					ingenic_dev->usb_dev = usb_dev;
 					count++;
+					printf("bus %s dev %s: pid %04X\n",
+					       usb_bus->dirname,
+					       usb_dev->filename,
+					       usb_dev->descriptor.idProduct);
 				}
 			}
 		}
@@ -108,7 +120,9 @@ void usb_ingenic_cleanup(struct ingenic_dev *ingenic_dev)
 		usb_close(ingenic_dev->usb_handle);
 }
 
-int usb_ingenic_init(struct ingenic_dev *ingenic_dev)
+int usb_ingenic_init(struct ingenic_dev *ingenic_dev,
+		     const char *bus_filter,
+		     const char *dev_filter)
 {
 	int num_ingenic, status = -1;
 
@@ -117,7 +131,7 @@ int usb_ingenic_init(struct ingenic_dev *ingenic_dev)
 	usb_find_busses();
 	usb_find_devices();
 
-	num_ingenic = get_ingenic_device(ingenic_dev);
+	num_ingenic = get_ingenic_device(ingenic_dev, bus_filter, dev_filter);
 
 	if (num_ingenic == 0) {
 		fprintf(stderr, "Error - no XBurst device found\n");

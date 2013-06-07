@@ -17,15 +17,19 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "../basic_cmd_lib/basic_cmd_lib.h"
 
 struct ingenic_dev *ingenic_dev;
 
 static void dev_init()
 {
+	const char *bus_filter = getenv("IBBUS");
+	const char *dev_filter = getenv("IBDEV");
+
 	ingenic_dev = malloc(sizeof (struct ingenic_dev));
 	memset(ingenic_dev, 0, sizeof(struct ingenic_dev));
-	if (usb_ingenic_init(ingenic_dev))
+	if (usb_ingenic_init(ingenic_dev, bus_filter, dev_filter))
 		exit (-1);
 }
 

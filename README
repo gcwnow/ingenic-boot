@@ -24,6 +24,10 @@ To support a new board, create a configuration file "fw/<board>.cfg" for your
 board. You can make it the default configuration by symlinking "fw/current.cfg"
 to your "<board>.cfg".
 
+You can define the environment variables IBBUS and/or IBDEV to consider only
+devices on a particular bus or with a particular device number. Note that these
+are strings, so make sure you include leading zeroes.
+
 Current version 2.0, future version will support NAND operation, GPIO test,
 etc.. and do more test.
 Check GIT repository for version log.
