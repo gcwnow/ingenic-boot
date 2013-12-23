@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export TOOLPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOOLPATH/../lib

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export TOPPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOPPATH/lib
@@ -54,9 +54,9 @@ do
 shift
 done
 
-[ "$exit" == "yes" ] && cat "$README" && exit
+[ "$exit" = "yes" ] && cat "$README" && exit
 
-if [ "$probe" == "yes" ]; then
+if [ "$probe" = "yes" ]; then
     echo "probe only"
     $TOPPATH/bin/basic_cmd_tool probe
     exit
@@ -68,7 +68,7 @@ if [ -z "$config" ]; then
 fi
 echo "Using board configuration: ${config}"
 
-if [ "$check" == "yes" ]; then
+if [ "$check" = "yes" ]; then
     [ -n "$mbr" ] && mbr="$mbr#1"
     [ -n "$boot" ] && boot="$boot#1"
     [ -n "$system" ] && system="$system#1"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ -z "$1" ]; then
     echo "Usage: patch_fw.sh <config>"
