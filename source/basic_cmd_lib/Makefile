@@ -19,13 +19,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-all : ../../lib/libcmd.so
+CC := $(CROSS_COMPILE)gcc
+CFLAGS := -fPIC -O2 -Wall
 
-../../lib/libcmd.so : basic_cmd_lib.o
-	gcc -shared -o ../../lib/libcmd.so basic_cmd_lib.o
+OBJS := basic_cmd_lib.o
 
-basic_cmd_lib.o : basic_cmd_lib.c
-	gcc -fPIC -c basic_cmd_lib.c
+ifdef STATIC
+TARGET := ../../lib/libcmd.a
+$(TARGET): $(OBJS)
+	$(AR) rcs $@ $^
+else
+TARGET := ../../lib/libcmd.so
+$(TARGET): $(OBJS)
+	$(CC) -shared -o $@ $^
+endif
 
-clean :
-	rm -rf basic_cmd_lib.o ../../lib/libcmd.so
+.PHONY: all clean
+all: $(TARGET)
+
+clean:
+	rm -rf $(TARGET) $(OBJS)

@@ -19,18 +19,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-LDFLAGS := -L../../lib -lcmd -lusb
+CC := $(CROSS_COMPILE)gcc
+CFLAGS := -O2 -Wall
+LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb
 
-all : ../../bin/stage2_cmd_tool
+OBJS := stage2_main.o stage2_sd.o
+TARGET := ../../bin/stage2_cmd_tool
 
-../../bin/stage2_cmd_tool : stage2_main.o stage2_sd.o
-	gcc -o ../../bin/stage2_cmd_tool stage2_main.o stage2_sd.o $(LDFLAGS)
+.PHONY: all clean
+all: $(TARGET)
 
-stage2_main.o : stage2_main.c
-	gcc -c stage2_main.c
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-stage2_sd.o : stage2_sd.c
-	gcc -c stage2_sd.c
-
-clean :
-	rm -rf stage2_main.o stage2_sd.o ../../bin/stage2_cmd_tool
+clean:
+	rm -rf $(TARGET) $(OBJS)

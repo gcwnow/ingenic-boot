@@ -19,15 +19,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-LDFLAGS := -L../../lib -lcmd -lusb
+CC := $(CROSS_COMPILE)gcc
+CFLAGS := -O2 -Wall
+LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb
 
-all : ../../bin/basic_cmd_tool
+OBJS := basic_cmd_tool.o
+TARGET := ../../bin/basic_cmd_tool
 
-../../bin/basic_cmd_tool : basic_cmd_tool.o
-	gcc -o ../../bin/basic_cmd_tool basic_cmd_tool.o $(LDFLAGS)
+.PHONY: all clean
+all: $(TARGET)
 
-basic_cmd_tool.o : basic_cmd_tool.c
-	gcc -c basic_cmd_tool.c
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-clean :
-	rm -rf basic_cmd_tool.o ../../bin/basic_cmd_tool
+clean:
+	rm -rf $(TARGET) $(OBJS)

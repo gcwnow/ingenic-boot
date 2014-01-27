@@ -19,15 +19,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-LDFLAGS := -lconfuse
+CC := $(CROSS_COMPILE)gcc
+CFLAGS := -O2 -Wall
+LDFLAGS := $(if $(STATIC),-static) -lconfuse
 
-all : ../../bin/fw_cfg_tool
+OBJS := fw_cfg_tool.o
+TARGET := ../../bin/fw_cfg_tool
 
-../../bin/fw_cfg_tool : fw_cfg_tool.o
-	gcc -o ../../bin/fw_cfg_tool fw_cfg_tool.o $(LDFLAGS)
+.PHONY: all clean
+all: $(TARGET)
 
-fw_cfg_tool.o : fw_cfg_tool.c
-	gcc -c fw_cfg_tool.c
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-clean :
-	rm -rf fw_cfg_tool.o ../../bin/fw_cfg_tool
+clean:
+	rm -rf $(TARGET) $(OBJS)
