@@ -65,7 +65,7 @@ if [ "$probe" = "yes" ]; then
 fi
 
 if [ -z "$config" ]; then
-    configfile=$(readlink fw/current.cfg)
+    configfile=$(readlink ${TOPPATH}/fw/current.cfg)
     config=${configfile%.cfg}
 fi
 echo "Using board configuration: ${config}"
