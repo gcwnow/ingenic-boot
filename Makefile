@@ -19,6 +19,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+INSTALL ?= install
+PREFIX ?= /usr/local
+
 all: lib/libcmd.so bin/basic_cmd_tool bin/fw_cfg_tool bin/stage2_cmd_tool
 
 lib/libcmd.so : force_look
@@ -49,3 +52,20 @@ clean:
 
 force_look :
 	@true
+
+install-lib:
+	$(INSTALL) -d -m 0755 $(DESTDIR)$(PREFIX)/lib/ingenic-boot/lib/
+	cp -a lib/libcmd.so $(DESTDIR)$(PREFIX)/lib/ingenic-boot/lib/libcmd.so
+
+install: $(if $(STATIC),,install-lib)
+	$(INSTALL) -s -D -m 0755 bin/basic_cmd_tool \
+		$(DESTDIR)$(PREFIX)/lib/ingenic-boot/bin/basic_cmd_tool
+	$(INSTALL) -s -D -m 0755 bin/fw_cfg_tool \
+		$(DESTDIR)$(PREFIX)/lib/ingenic-boot/bin/fw_cfg_tool
+	$(INSTALL) -s -D -m 0755 bin/stage2_cmd_tool \
+		$(DESTDIR)$(PREFIX)/lib/ingenic-boot/bin/stage2_cmd_tool
+	$(INSTALL) -d -m 0755 $(DESTDIR)$(PREFIX)/lib/ingenic-boot/fw/ $(DESTDIR)$(PREFIX)/lib/ingenic-boot/tool/
+	cp -a fw/* $(DESTDIR)$(PREFIX)/lib/ingenic-boot/fw/
+	cp -a tool/* $(DESTDIR)$(PREFIX)/lib/ingenic-boot/tool/
+	$(INSTALL) -D -m 0644 README $(DESTDIR)$(PREFIX)/lib/ingenic-boot/
+	$(INSTALL) -D -m 0755 ingenic-boot $(DESTDIR)$(PREFIX)/bin/ingenic-boot

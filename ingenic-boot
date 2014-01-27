@@ -1,6 +1,8 @@
 #!/bin/sh
 
-export TOPPATH=$(cd "$(dirname "$0")"; pwd)
+[ -z "$TOPPATH" ] && export TOPPATH="/usr/local/lib/ingenic-boot"
+[ ! -d "$TOPPATH" ] && export TOPPATH="/usr/lib/ingenic-boot"
+[ ! -d "$TOPPATH" ] && export TOPPATH=$(cd "$(dirname "$0")"; pwd)
 export LD_LIBRARY_PATH=$TOPPATH/lib
 README="$TOPPATH/README"
 
