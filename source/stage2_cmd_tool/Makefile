@@ -21,7 +21,7 @@
 
 CC := $(CROSS_COMPILE)gcc
 CFLAGS := -O2 -Wall
-LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb
+LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb -lusb-1.0 -lpthread
 
 OBJS := stage2_main.o stage2_sd.o
 TARGET := ../../bin/stage2_cmd_tool

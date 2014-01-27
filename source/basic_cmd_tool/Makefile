@@ -21,7 +21,7 @@
 
 CC := $(CROSS_COMPILE)gcc
 CFLAGS := -O2 -Wall
-LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb
+LDFLAGS := $(if $(STATIC),-static) -L../../lib -lcmd -lusb -lusb-1.0 -lpthread
 
 OBJS := basic_cmd_tool.o
 TARGET := ../../bin/basic_cmd_tool
