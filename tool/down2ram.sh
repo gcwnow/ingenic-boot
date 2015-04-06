@@ -13,7 +13,7 @@ helpmsg()
     echo
 }
 
-ARGS=`getopt -a -o h -l bin:,downto:,runat:,help -- "$@"`
+ARGS=`getopt -a -o h -l config:,bin:,downto:,runat:,help -- "$@"`
 [ $? -ne 0 ] && helpmsg && exit
 #set -- "${ARGS}"
 eval set -- "${ARGS}"
