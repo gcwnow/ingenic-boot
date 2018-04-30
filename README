@@ -2,7 +2,7 @@ ingenic-boot is a linux port of Ingenic usb boot tools.
 using the same firmware of windows version.
 
 Build Requirements: libusb-dev, libconfuse-dev, simply install on debian:
-	sudo apt-get install libusb-dev libconfuse-dev
+	sudo apt-get install libusb-dev libusb-1.0-0-dev libconfuse-dev
 
 To compile, simply type:
 	make
