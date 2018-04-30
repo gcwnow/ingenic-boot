@@ -122,7 +122,7 @@ int main (int argc, char *argv[])
 
 		buf = malloc(size);
 
-		int fd = open(argv[1], O_CREAT | O_WRONLY | O_TRUNC);
+		int fd = open(argv[1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 
 		if (fd < 0) {
 			fprintf(stderr, "Error - can't create file '%s': %s\n",
